@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *; connect-src http://www.cogollosdeloeste.com.ar http://es.seedfinder.eu http://api.worldweatheronline.com; img-src 'self' data: http://www.cogollosdeloeste.com.ar http://es.seedfinder.eu;">
+		<title>CodeloApp</title>
+		<link rel="stylesheet" type="text/css" href="jquerymobile/jquery.mobile-1.4.5.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/leaflet.css" />
+		<link rel="stylesheet" type="text/css" href="css/codelo-default.css">
+		<link rel="stylesheet" type="text/css" href="css/index.css" />
+	</head>
+
+	<body>
+		<div data-role="page" id="main" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div id="regId"></div>
+				<div id="cards"></div>
+				<ul id="main-menu" data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon codelo-menu">
+					<li data-role="list-divider">Menú Principal</li>
+					<li class="ui-li-has-icon"><a href="#eventos"><i class="menu-codelo-icon menu-codelo-icon-calendar-icon-16"></i>Eventos</a></li>
+					<li class="ui-li-has-icon"><a href="#strainssearch"><i class="menu-codelo-icon menu-codelo-icon-adn-icon-16"></i>Buscador de Genéticas</a></li>
+					<li class="ui-li-has-icon"><a href="#weatherstation"><i class="menu-codelo-icon menu-codelo-icon-weather-icon-16"></i>Estación Meterológica</a></li>
+					<li class="ui-li-has-icon"><a href="#growplanner"><i class="menu-codelo-icon menu-codelo-icon-calculator-icon-16"></i>Planificador de cultivo</a></li>
+				</ul>
+			</div>
+			
+			<div data-role="popup" id="popupMsg-main" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:250px; max-width:400px;">
+				<div data-role="header" data-theme="a" class="ui-nodisc-icon">
+					<h1 id="popupMsg-title-main"></h1>
+					<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">x</a>
+				</div>
+				<div role="main" class="ui-content">
+					<div id="popupMsg-main-main"></div>
+					<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Aceptar</a>
+				</div>
+			</div>
+
+			<div data-role="popup" id="popupLogin" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+				<div data-role="header" data-theme="a" class="ui-nodisc-icon">
+					<h1>Acceso Socios</h1>
+					<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">LogIn</a>
+				</div>
+				<div role="main" class="ui-content">
+					<form id="login-form">
+						<div style="padding:10px 20px;">
+							<label for="un" class="ui-hidden-accessible">Username:</label>
+							<input type="text" name="user" id="user-input" value="" placeholder="Usuario" data-theme="a">
+							<label for="pw" class="ui-hidden-accessible">Password:</label>
+							<input type="password" name="pass" id="password-input" value="" placeholder="Contraseña" data-theme="a">
+							<button type="submit" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Ingresar</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content show-only-guest">
+					<a href="#popupLogin" data-rel="popup" data-position-to="window" class="ui-btn ui-btn-b ui-corner-all ui-btn-icon-left ui-icon-lock middle-header-button codelo-btn-left">Acceso Socios</a>
+				</div>
+				<div class="codelo-toolbar-content auth-required">
+					<p>Logueado como <span id="loged-username"></span></p>
+				</div>
+			</div>
+		</div>
+		
+		<div data-role="page" id="eventos" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Eventos</h1>
+					</div>
+					<div class="ui-body ui-body-b codelo-list-container">
+						<h3>Próximos Eventos</h3>
+						<div id="next-events"></div>
+						<h3>Eventos Anteriores</h3>
+						<div id="prev-events"></div>
+					</div>
+				</div>
+			</div><!-- /content -->
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+			</div>
+		</div>
+
+		<div data-role="page" id="strainssearch" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header" data-tap-toggle="false">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Buscador de Genéticas</h1>
+					</div>
+					<div class="ui-body ui-body-b codelo-list-container">
+						<input id="search-strains-input" type="search" name="password" id="search" value="" placeholder="Nombre genética...">
+						<button id="search-strains-button" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-search">Buscar</button>
+						<div id="strain-search-results"></div>
+					</div>
+				</div>
+			</div><!-- /content -->
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient" data-tap-toggle="false">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-sf-badge">Powered by &nbsp; <img src="img/logos/sf-logo.png"> &nbsp; (SeedFinder.eu)</span>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="straininfo" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header" data-tap-toggle="false">
+				<div class="codelo-toolbar-content">
+					<a data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Ficha de genética</h1>
+					</div>
+					<div class="ui-body ui-body-b codelo-list-container">
+						<div class="strain-info-box">
+							<div class="strain-info-box-content">
+								<span><strong>Nombre:</strong><span id="name"></span></span><br/>
+								<span><strong>Breeder:</strong><span id="breeder"></span></span><br/>
+								<span><strong>Tipo:</strong><span id="type"></span></span><br/>
+								<span><strong>Floración:</strong><span id="flowering-days"></span></span><br/>
+							</div>
+						</div>
+						<div class="pic-container">
+							<img id="strain-pic" />
+						</div>
+						
+						<div>
+							<h3>Descripcion</h3>
+							<span id="strain-desc"></span>
+						</div>
+					</div>
+				</div>
+			</div><!-- /content -->
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient" data-tap-toggle="false">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-sf-badge">Powered by &nbsp; <img src="img/logos/sf-logo.png"> &nbsp; (SeedFinder.eu)</span>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="weatherstation" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Estación meteorológica</h1>
+					</div>
+					<div id="weather-body" class="ui-body ui-body-b">
+						<button id="get-location-btn" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-location">Obtener localización</button>
+						<button id="set-location-bsas-btn" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-location">Ver Buenos Aires, AR</button>
+						<div id="weather-content">
+						</div>
+						<ul id="weather-info" data-role="listview" data-inset="true" class="wheather-info">
+							<li>Nubosida: <span id="nubosidad"></span></li>
+							<li>Humedad: <span id="humedad"></span></li>
+							<li>Prob. Precipitaciones: <span id="posPrecipitaciones"></span></li>
+							<li>Viento: <span id="viento"></span></li>
+							<li>Salida del sol: <span id="sunrise"></span></li>
+							<li>Puesta del sol: <span id="sunset"></span></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-wwo-badge">Powered by &nbsp; <img src="img/logos/wwo-logo.png"></span>
+				</div>
+			</div>
+		</div>
+		<div data-role="page" id="growplanner" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Planificador de cultivo</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<ul data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon	grow-plan-menu">
+							<li>
+								<a class="start-codelo-btn" href="#growplannerone">INICIAR PLANIFICADOR</a>
+							</li>
+						</ul>
+						<hr/>
+						<h2>Planificador de Cultivo</h2>
+						<h4><em>Introducción</em></h4>
+						<p>El siguiente es un <strong>PLANIFICADOR DE CULTIVO</strong> exterior.
+						El mismo ira solicitandole datos sobre su disponibilidad y sus requerimientos para poder planificar un cultivo acorde a sus necesidades.<br/>
+
+						Los datos requeridos para la planificación son:</p>
+						<ul>
+							<li><strong>CONSUMO</strong></strong></li>
+							<li><strong>LUGAR</strong></li>
+							<li><strong>SOL</strong></li>
+						</ul>
+
+						<p>Uno de los datos es el <strong>CONSUMO</strong> para el cual apuntamos nuestro cultivo, disponemos de 4 niveles:</p>
+						<ul>
+							<li><strong>OCASIONAL</strong> <em>(1gr por semana)</em></li>
+							<li><strong>BAJO</strong> <em>(5grs por semana)</em></li>
+							<li><strong>MEDIO</strong> <em>(10grs por semana)</em></li>
+							<li><strong>ALTO</strong> <em>(25grs por semana)</em></li>
+						</ul>
+
+						<p>Otra dato es el <strong>LUGAR</strong> que disponemos para realizar nuestro cultivo, contamos con 4 opciones:</p>
+						<ul>
+							<li><strong>BALCÓN</strong></li>
+							<li><strong>TERRAZA</strong></li>
+							<li><strong>SUELO</strong></li>
+							<li><strong>PATIO</strong></li>
+						</ul>
+
+						<p>Y el ultimo dato es la cantidad de <strong>SOL</strong> que disponemos para nuestro cultivo, tendrémos 6 opciones:</p>
+						<ul>
+							<li><strong>ESCASO POR LA MAÑANA</strong> <em>(1 hora de sol directo)</em></li>
+							<li><strong>ESCASO POR LA TARDE</strong> <em>(1 hora de sol directo)</em></li>
+							<li><strong>BAJO POR LA MAÑANA</strong> <em>(1 a 3 horas de sol directo)</em></li>
+							<li><strong>BAJO POR LA TARDE</strong> <em>(1 a 3 horas de sol directo)</em></li>
+							<li><strong>MEDIO</strong> <em>(3 a 6 horas de sol directo)</em></li>
+							<li><strong>ALTO</strong> <em>(mas de 6 horas de sol directo)</em></li>
+						</ul>
+						<hr/>
+						<ul data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon	grow-plan-menu">
+							<li>
+								<a class="start-codelo-btn" href="#growplannerone">INICIAR PLANIFICADOR</a>
+							</li>
+						</ul>	
+					</div>
+				</div>
+			</div>
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-thc-jam">Powered by &nbsp; <img src="img/logos/thc-jam-logos.png"></span>
+				</div>
+			</div>
+		</div>
+		
+		<div data-role="page" id="growplannerone" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Planificador de cultivo</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<h2>CONSUMO</h2>
+						<h4>Paso 1 de 3</h4>
+						<p>Indique el nivel de consumo:</p>
+						<ul id="consumo-opts" data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon grow-plan-menu">
+							<li>
+								<a id="C_OCASIONAL" href="#growplannertwo">
+									<img src="img/icons/consumo-ocacional.png" class="list-img-center" />
+									<h2>OCASIONAL</h2>
+									<p>1 GRAMO POR SEMANA</p>
+									<p>52 GRAMOS POR AÑO</p>
+								</a>
+							</li>
+							<li>
+								<a id="C_BAJO" href="#growplannertwo">
+									<img src="img/icons/consumo-bajo.png" class="list-img-center" />
+									<h2>BAJO</h2>
+									<p>5 GRAMOS POR SEMANA</p>
+									<p>260 GRAMOS POR AÑO</p>
+								</a>
+							</li>
+							<li>
+								<a id="C_MEDIO" href="#growplannertwo">
+									<img src="img/icons/consumo-medio.png" class="list-img-center" />
+									<h2>MEDIO</h2>
+									<p>10 GRAMOS POR SEMANA</p>
+									<p>520 GRAMOS POR AÑO</p>
+								</a>
+							</li>
+							<li>
+								<a id="C_ALTO" href="#growplannertwo">
+									<img src="img/icons/consumo-alto.png" class="list-img-center" />
+									<h2>ALTO</h2>
+									<p>25 GRAMOS POR SEMANA</p>
+									<p>1.300 GRAMOS POR AÑO</p>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-thc-jam">Powered by &nbsp; <img src="img/logos/thc-jam-logos.png"></span>
+				</div>
+			</div>
+		</div>
+		
+		<div data-role="page" id="growplannertwo" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Planificador de cultivo</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<h2>LUGAR</h2>
+						<h4>Paso 2 de 3</h4>
+						<p>Indique el lugar del cultivo:</p>
+						<ul id="lugar-opts" data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon	grow-plan-menu">
+							<li>
+								<a id="L_BALCON" href="#growplannerthree">
+									<h2>BALCÓN</h2>
+								</a>
+							</li>
+							<li>
+								<a id="L_TERRAZA" href="#growplannerthree">
+									<h2>TERRAZA</h2>
+								</a>
+							</li>
+							<li>
+								<a id="L_SUELO" href="#growplannerthree">
+									<h2>SUELO</h2>
+								</a>
+							</li>
+							<li>
+								<a id="L_PATIO" href="#growplannerthree">
+									<h2>PATIO</h2>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-thc-jam">Powered by &nbsp; <img src="img/logos/thc-jam-logos.png"></span>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="growplannerthree" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Planificador de cultivo</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<h2>SOL</h2>
+						<h4>Paso 3 de 3</h4>
+						<p>Indique las horas de sol directo disponible:</p>
+						<ul id="sol-opts" data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon grow-plan-menu">
+							<li>
+								<a id="S_ESCASOM" href="#growplannerfour">
+									<img src="img/icons/sun-verylow.png" class="list-img-center" />
+									<h2>ESCASO / POR LA MAÑANA</h2>
+									<p>Menos de 1 hora de sol directo</p>
+								</a>
+							</li>
+							<li>
+								<a id="S_ESCASOT" href="#growplannerfour">
+									<img src="img/icons/sun-verylow.png" class="list-img-center" />
+									<h2>ESCASO / POR LA TARDE</h2>
+									<p>Menos de 1 hora de sol directo</p>
+								</a>
+							</li>
+							<li>
+								<a id="S_BAJOM" href="#growplannerfour">
+									<img src="img/icons/sun-low.png" class="list-img-center" />
+									<h2>BAJO / POR LA MAÑANA</h2>
+									<p>De 1 a 3 horas de sol directo</p>
+								</a>
+							</li>
+							<li>
+								<a id="S_BAJOT" href="#growplannerfour">
+									<img src="img/icons/sun-low.png" class="list-img-center" />
+									<h2>BAJO / POR LA TARDE</h2>
+									<p>De 1 a 3 horas de sol directo</p>
+								</a>
+							</li>
+							<li>
+								<a id="S_MEDIO" href="#growplannerfour">
+									<img src="img/icons/sun-med.png" class="list-img-center" />
+									<h2>MEDIO</h2>
+									<p>De 3 a 6 horas de sol directo</p>
+								</a>
+							</li>
+							<li>
+								<a id="S_ALTO" href="#growplannerfour">
+									<img src="img/icons/sun-high.png" class="list-img-center" />
+									<h2>ALTO</h2>
+									<p>Más de 6 horas de sol directo</p>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-thc-jam">Powered by &nbsp; <img src="img/logos/thc-jam-logos.png"></span>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="growplannerfour" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Planificador de cultivo</h1>
+					</div>
+					<div class="ui-body ui-body-b body-grow-plan-res">
+						<h2>Resultado</h2>
+						<hr/>
+						<h5>CULTIVO N° <span id="id-grow-plan-info"></span></h5>
+						<div class="grow-result">
+							<p class="grow-label">Genéticas: </p><p id="strains-grow-plan-info"></p><br/>
+							<p class="grow-label">Plantas: </p><p id="plants-grow-plan-info"></p><br/>
+							<p class="grow-label">Cultivo: </p><p id="farming-grow-plan-info"></p><br/>
+							<p class="grow-label">Germinación: </p><p id="germination-grow-plan-info"></p><br/>
+						</div>
+						<hr/>
+						<h5>Su selección fué:</h5>
+						<ul id="grow-plan-sel" data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon grow-plan-menu">
+							
+						</ul>
+						<hr/>
+						<ul data-role="listview" data-inset="true" data-divider-theme="a" class="ui-nodisc-icon ui-alt-icon	grow-plan-menu">
+							<li>
+								<a class="start-codelo-btn" href="#growplannerone">REINICIAR PLANIFICADOR</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				
+			</div>
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<span class="powered-by-thc-jam">Powered by &nbsp; <img src="img/logos/thc-jam-logos.png"></span>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="partnerprofile" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Perfil de Socio</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<div style="width: 50%; padding: 0.4em;">
+							<img id="profilePhoto" src="http://www.cogollosdeloeste.com.ar/profiles/0.jpg" style="width: 100%; border-radius: 4px 4px 4px 4px; border: 1px solid #000000;">
+						</div>
+						<hr/>
+						<div style="padding: 0.5em;">
+							<strong>N° de Socio:</strong> <span id="nroSocio"></span><br/>
+							<strong>Nombre:</strong> <span id="nombreSocio"></span><br/>
+							<strong>Apellido:</strong> <span id="apellidoSocio"></span><br/>
+							<strong>Ingreso:</strong> <span id="fechaIngresoSocio"></span>
+						</div>
+						<hr/>
+						<div style="padding: 0.5em;">
+							<strong>Fecha de último pago:</strong> <span id="fechaUltimoPagoSocio" class="badge-right"></span><br/>
+						</div>
+						<hr class="margin-bottom"/>
+						<div style="padding: 0.5em;">
+							<strong>Última cuota:</strong> <span id="ultimaCuotaSocio" class="badge badge-positive badge-right"></span><br/>
+						</div>
+						<hr class="margin-top"/>
+					</div>
+				</div>
+			</div>
+
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+				<div class="codelo-toolbar-content">
+					<a href="#" id="closeSession" class="ui-btn ui-btn-b ui-corner-all ui-btn-icon-left ui-icon-delete middle-header-button codelo-btn-left">Cerrar Sesión</a>
+				</div>
+			</div>
+		</div>
+
+		<div data-role="page" id="raidalarm" data-transition="slide">
+			<div data-role="header" data-id="codelo-header" data-tap-toggle="false" data-position="fixed" class="codelo-header">
+				<div class="codelo-toolbar-content">
+					<a href="#main" class="ui-btn ui-shadow ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button">home</a>
+					<a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-b ui-btn-inline middle-header-button exit-app-btn">exit</a>
+				</div>
+			</div>
+
+			<div role="main" class="ui-content">
+				<div class="ui-corner-all custom-corners">
+					<div class="ui-bar ui-bar-b">
+						<h1>Alarma Allanamiento</h1>
+					</div>
+					<div class="ui-body ui-body-b">
+						<div id="situacion-section">
+							<h4>Seleccione su situación:</h4>
+							<button type="button" id="allanamiento-btn" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-home" data-theme="b">Allanamiento en domicilio  particular</button>
+							<button type="button" id="detencion-btn" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-location" data-theme="b">Detención en vía pública (GPS)</button>
+						</div>
+						<div id="allanamiento-section">
+							<h4>Allanamiento en domicilio</h4>
+							<p>Domicilio: <span id="address-raidalarm"></span></p>
+						</div>
+						<div id="detencion-section">
+							<h4>Detención en vía pública</h4>
+							<div id="map"></div>
+							<p class="map-legend">-Mantenga presionada una posición en el mapa para modificar la localización<p>
+							<fieldset>
+								<div data-role="fieldcontain">
+									<label for="send-location-raid-alarm">Enviar ubicación:</label>
+									<input type="checkbox" checked="checked" id="send-location-raid-alarm" data-role="flipswitch" data-on-text="SI" data-off-text="NO">
+								</div>
+							</fieldset>
+						</div>
+						
+						<div id="send-alarm-msg-section">
+							<h4>Mensaje</h4>
+							<textarea name="raidalarm-message" id="raidalarm-message" class="raidalarm-message"></textarea>
+							
+							<button type="button" id="raidalarm-btn" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-action" data-theme="b">ENVIAR ALARMA</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div data-role="popup" id="popupMsg-raidalarm" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:250px; max-width:400px;">
+				<div data-role="header" data-theme="a" class="ui-nodisc-icon">
+					<h1 id="popupMsg-title-raidalarm"></h1>
+					<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">x</a>
+				</div>
+				<div role="main" class="ui-content">
+					<div id="popupMsg-main-raidalarm"></div>
+					<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Aceptar</a>
+				</div>
+			</div>
+			
+			<div data-role="footer" data-id="codelo-footer" data-tap-toggle="false" data-position="fixed" class="codelo-footer black-gradient">
+			</div>
+		</div>
+		<script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript" src="js/constants.js"></script>
+		<script type="text/javascript" src="plugins/phonegap-plugin-push/www/push.js"></script>
+		<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+		<script type="text/javascript" src="jquerymobile/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="js/leaflet.js"></script>
+		<script type="text/javascript" src="js/base64.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/codeloapp-main.js"></script>
+	</body>
+</html>
